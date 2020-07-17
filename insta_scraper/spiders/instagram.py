@@ -60,14 +60,14 @@ class InstagramSpider(scrapy.Spider):
         # )
 
         # followers
-        # url_followers = f'{self.graphql_url}query_hash={self.followers_hash}&{urlencode(variables)}'
-        # yield response.follow(
-        #     url_followers,
-        #     callback=self.user_followers_parse,
-        #     cb_kwargs={'username': username,
-        #                'user_id': user_id,
-        #                'variables': deepcopy(variables)},
-        # )
+        url_followers = f'{self.graphql_url}query_hash={self.followers_hash}&{urlencode(variables)}'
+        yield response.follow(
+            url_followers,
+            callback=self.user_followers_parse,
+            cb_kwargs={'username': username,
+                       'user_id': user_id,
+                       'variables': deepcopy(variables)},
+        )
 
         # followings
         url_followings = f'{self.graphql_url}query_hash={self.followings_hash}&{urlencode(variables)}'
