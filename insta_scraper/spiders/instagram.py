@@ -21,6 +21,7 @@ class InstagramSpider(scrapy.Spider):
     # hashes
     post_hash = '15bf78a4ad24e33cbd838fdb31353ac1'
     followers_hash = 'c76146de99bb02f6415203be841dd25a'
+    followings_hash = 'd04b0a864b4b54837c0d870b0e77e076'
 
     graphql_url = 'https://www.instagram.com/graphql/query/?'
 
@@ -59,14 +60,49 @@ class InstagramSpider(scrapy.Spider):
         # )
 
         # followers
-        url_followers = f'{self.graphql_url}query_hash={self.followers_hash}&{urlencode(variables)}'
+        # url_followers = f'{self.graphql_url}query_hash={self.followers_hash}&{urlencode(variables)}'
+        # yield response.follow(
+        #     url_followers,
+        #     callback=self.user_followers_parse,
+        #     cb_kwargs={'username': username,
+        #                'user_id': user_id,
+        #                'variables': deepcopy(variables)},
+        # )
+
+        # followings
+        url_followings = f'{self.graphql_url}query_hash={self.followings_hash}&{urlencode(variables)}'
         yield response.follow(
-            url_followers,
-            callback=self.user_followers_parse,
+            url_followings,
+            callback=self.user_followings_parse,
             cb_kwargs={'username': username,
                        'user_id': user_id,
                        'variables': deepcopy(variables)},
         )
+
+    # followings parse
+    def user_followings_parse(self, response: HtmlResponse, username, user_id, variables):
+        j_data = json.loads(response.text)
+        page_info = j_data.get('data').get('user').get('edge_follow').get('page_info')
+        if page_info.get('has_next_page'):
+            variables['after'] = page_info['end_cursor']
+            url_posts = f'{self.graphql_url}query_hash={self.followers_hash}&{urlencode(variables)}'
+            yield response.follow(
+                url_posts,
+                callback=self.user_followings_parse,
+                cb_kwargs={'username': username,
+                           'user_id': user_id,
+                           'variables': deepcopy(variables)},
+            )
+        followings = j_data.get('data').get('user').get('edge_follow').get('edges')
+        for following in followings:
+            yield FollowerItem(
+                name=following['node']['username'],
+                follower_id=following['node']['id'],
+                profile_photo_link=following['node']['profile_pic_url'],
+                username_who_is_subscribed_to=username,
+                id_who_is_subscribed_to=user_id,
+                is_follower=False
+            )
 
     # followers parse
     def user_followers_parse(self, response: HtmlResponse, username, user_id, variables):
@@ -89,7 +125,8 @@ class InstagramSpider(scrapy.Spider):
                 follower_id=follower['node']['id'],
                 profile_photo_link=follower['node']['profile_pic_url'],
                 username_who_is_subscribed_to=username,
-                id_who_is_subscribed_to=user_id
+                id_who_is_subscribed_to=user_id,
+                is_follower=True
             )
 
     # posts parse
