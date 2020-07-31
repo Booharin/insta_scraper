@@ -4,6 +4,7 @@ BOT_NAME = 'insta_scraper'
 SPIDER_MODULES = ['insta_scraper.spiders']
 NEWSPIDER_MODULE = 'insta_scraper.spiders'
 
+IMAGES_STORE = 'photo'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36'
@@ -57,7 +58,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'insta_scraper.pipelines.InstaScraperPipeline': 300,
+   'insta_scraper.pipelines.DataBasePipeline': 300,
+   'insta_scraper.pipelines.ProfilesPhotosPipeline': 200
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

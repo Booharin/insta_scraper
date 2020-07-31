@@ -18,3 +18,6 @@ class FollowerItem(scrapy.Item):
     profile_photo_link = scrapy.Field()
     username_who_is_subscribed_to = scrapy.Field()
     id_who_is_subscribed_to = scrapy.Field()
+    is_follower = scrapy.Field()
+
+
